@@ -1,0 +1,7 @@
+/env/
+config.ini
+*.log
+text.txt
+.vscode
+__pycache__
+/Борохло/
