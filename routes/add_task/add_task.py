@@ -1,6 +1,8 @@
 from flask import render_template, request, redirect, url_for, Blueprint
-from database.models import db, Task
 from pony.orm import db_session
+
+from database.models import db, Task
+
 
 add = Blueprint("add", __name__)
 
