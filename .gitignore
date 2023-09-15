@@ -5,3 +5,4 @@ text.txt
 .vscode
 __pycache__
 /Борохло/
+.gitignore

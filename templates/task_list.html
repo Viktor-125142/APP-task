@@ -6,47 +6,53 @@
     <title>Список задач</title>
     <link
       rel="stylesheet"
-      href="{{url_for('static', filename='styles.css')}}"
+      href="{{url_for('static', filename='task_list.css')}}"
     />
   </head>
   <body>
+    <div class="addForm">
     <h1>Список задач</h1>
-    <button id="addTaskButton" onclick="location.href='add_task'">
+    <button class="addTaskButton" onclick="location.href='add_task'">
       Добавить задачу
     </button>
-
-    <div id="sorting">
-      <h2>Сортировка:</h2>
-      <label for="sortOptions">Выберите порядок сортировки:</label>
-      <select id="sortOptions">
-        <option value="dateAsc">Дата постановки (от старого к новому)</option>
-        <option value="dateDesc">Дата постановки (от нового к старому)</option>
-        <option value="titleAsc">Название (от А до Я)</option>
-        <option value="titleDesc">Название (от Я до А)</option>
-      </select>
-      <button id="applySort" onclick="applySorting()">Применить</button>
-    </div>
+  </div>
 
     <div id="filters">
       <h2>Фильтр:</h2>
       <form id="filterForm" action="/apply_filter" method="POST">
-        <label for="statusFilter">Статус:</label>
+        <label for="statusFilter"></label>
         <select id="statusFilter" name="status">
+          <option value="">Все</option>
           <option value="Беклог">Беклог</option>
           <option value="В работе">В работе</option>
           <option value="На проверке">На проверке</option>
           <option value="Выполнено">Выполнено</option>
         </select>
-        <label for="authorFilter">Автор:</label>
-        <input type="text" id="authorFilter" name="author" />
-        <label for="assigneeFilter">Исполнитель:</label>
-        <input type="text" id="assigneeFilter" name="assignee" />
-        <label for="dateFilter">Дата постановки:</label>
-        <input type="date" id="dateFilter" name="date" />
+        <input type="hidden" name="status" value="">
+    <input type="hidden" name="author" value="">
+    <input type="hidden" name="assignee" value="">
+    <input type="hidden" name="date" value="">
         <button type="submit">Применить фильтр</button>
-        <button type="reset">Сбросить фильтр</button>
       </form>
     </div>
+
+    <form id="sortingForm" action="/apply_sort" method="POST">
+      <!-- Обернуть код внутри <form> -->
+      <div id="sorting">
+        <h2>Сортировка:</h2>
+        <label for="sortOptions">Выберите порядок сортировки:</label>
+        <select id="sortOptions" name="sort_option">
+          <!-- Добавьте атрибут name для выбора сортировки -->
+          <option value="dateAsc">Дата постановки (от старого к новому)</option>
+          <option value="dateDesc">
+            Дата постановки (от нового к старому)
+          </option>
+          <option value="titleAsc">Название (от А до Я)</option>
+          <option value="titleDesc">Название (от Я до А)</option>
+        </select>
+        <button type="submit">Применить сортировку</button>
+      </div>
+    </form>
 
     <table id="taskTable">
       <thead>
@@ -56,48 +62,50 @@
           <th>Исполнитель</th>
           <th>Дата постановки</th>
           <th>Статус</th>
+          <th>Описание задачи</th>
           <th>Действия</th>
         </tr>
       </thead>
       <tbody>
-        {% for task in tasks %}
-        <tr>
-          <td>{{ task.title }}</td>
-          <td>{{ task.author }}</td>
-          <td>{{ task.assignee }}</td>
-          <td>{{ task.created_at.strftime('%Y-%m-%d') }}</td>
-          <td>{{ task.status }}</td>
-          <td>
-            <input type="checkbox" name="selectedTasks" value="{{ task.id }}" />
-          </td>
-        </tr>
+        {% set tasks_per_page = 5 %}
+        {% set total_pages = (total_tasks + tasks_per_page - 1) // tasks_per_page %}
+        {% set current_page = 1 if not request.args.get('page') else request.args.get('page') | int %}
+        {% set start_index = (current_page - 1) * tasks_per_page %}
+        {% set end_index = current_page * tasks_per_page %}
+        
+        {% for task in tasks[start_index:end_index] | sort(attribute='created_at', reverse=(selected_sort_option == "dateDesc" or selected_sort_option == "titleDesc")) %}
+            {% if not selected_status or task.status == selected_status %}
+                <tr>
+                    <td>{{ task.title }}</td>
+                    <td>{{ task.author }}</td>
+                    <td>{{ task.assignee }}</td>
+                    <td>{{ task.created_at.strftime('%Y-%m-%d') }}</td>
+                    <td>{{ task.status }}</td>
+                    <td>{{ task.description }}</td>
+                    <td>
+                        <form id="actionsForm" action="/perform_action" method="POST">
+                            <div id="actions">
+                                <label class='edit-delete' for="actionOptions"></label>
+                                <select class='edit-delete' name="selected_action">
+                                    <option value="edit">Изменить</option>
+                                    <option value="delete">Удалить</option>
+                                </select>
+                                <!-- Добавьте скрытое поле для передачи task.id -->
+                                <input type="hidden" name="selected_action" value="delete">
+                                <input type="hidden" name="task_id" value="{{ task.id }}" />
+                                <button type="submit" name="performAction">Выполнить</button>
+                            </div>
+                        </form>
+                    </td>
+                </tr>
+            {% endif %}
         {% endfor %}
-      </tbody>
-    </table>
-
-    <div id="pagination">
-      <div id="pagination">
-        {% if pages > 1 %}
-        <span>Страница {{ page }} из {{ pages }}</span>
-        <a href="{{ url_for('task_list', page=1) }}">Первая</a>
-        {% if page > 1 %}
-        <a href="{{ url_for('task_list', page=page-1) }}">Предыдущая</a>
-        {% endif %} {% if page < pages %}
-        <a href="{{ url_for('task_list', page=page+1) }}">Следующая</a>
-        {% endif %}
-        <a href="{{ url_for('task_list', page=pages) }}">Последняя</a>
-        {% endif %}
-      </div>
-    </div>
-
-    <div id="actions">
-      <h2>Действия:</h2>
-      <label for="actionOptions">Выберите действие:</label>
-      <select id="actionOptions">
-        <option value="delete">Удалить</option>
-        <option value="edit">Изменить</option>
-      </select>
-      <button id="performAction" onclick="performAction()">Выполнить</button>
-    </div>
+    </tbody>
+</table>
+<div class="pagination">
+    {% for page in range(1, total_pages + 1) %}
+        <a href="?page={{ page }}" {% if page == current_page %}class="active"{% endif %}>{{ page }}</a>
+    {% endfor %}
+</div>
   </body>
 </html>

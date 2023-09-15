@@ -1,0 +1,58 @@
+/* Стили для всей страницы */
+body {
+    font-family: Arial, sans-serif;
+    background-color: #f4f4f4;
+    margin: 0;
+    padding: 0;
+  }
+  
+  /* Стили для контейнера формы */
+  #addTaskForm {
+    max-width: 600px;
+    margin: 0 auto;
+    background-color: #fff;
+    padding: 20px;
+    border-radius: 5px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+  }
+  
+  /* Стили для заголовка */
+  h1 {
+    font-size: 24px;
+    text-align: center;
+  }
+  
+  /* Стили для полей ввода */
+  label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: bold;
+  }
+  
+  input[type="text"],
+  input[type="date"],
+  textarea {
+    width: 100%;
+    padding: 10px;
+    margin-bottom: 10px;
+    border: 1px solid #ccc;
+    border-radius: 3px;
+    font-size: 16px;
+  }
+  
+  /* Стили для кнопки */
+  #saveTaskButton {
+    background-color: #007BFF;
+    color: #fff;
+    border: none;
+    padding: 10px 20px;
+    font-size: 16px;
+    cursor: pointer;
+  }
+  
+  #saveTaskButton:hover {
+    background-color: #0056b3;
+  }
+  
+  /* Дополнительные стили по вашему усмотрению */
+  
